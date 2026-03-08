@@ -1,7 +1,7 @@
 # Makefile cheat sheet:
 # https://www.gnu.org/software/make/manual/html_node/Automatic-Variables.html
 
-all: build/henloader.iso
+all: build/RefactorHenloader.iso
 
 # Known-good JDK packages for Linux
 # Source: https://github.com/adoptium/temurin8-binaries/releases
@@ -59,7 +59,7 @@ LOADER_SOURCES += org/bdj/InitXlet.java
 LOADER_SOURCES += org/bdj/MessagesOutputStream.java
 LOADER_SOURCES += org/bdj/Screen.java
 
-build/henloader.jar: $(JAVA8) $(addprefix src/,$(LOADER_SOURCES)) src/$(LOADER_BD_PERM)
+build/RefactorHenloader.jar: $(JAVA8) $(addprefix src/,$(LOADER_SOURCES)) src/$(LOADER_BD_PERM)
 	mkdir -p $(LOADER_DSTDIR)
 	mkdir -p $(LOADER_DSTDIR)/$(dir $(LOADER_BD_PERM))
 	cp src/$(LOADER_BD_PERM) $(LOADER_DSTDIR)/$(LOADER_BD_PERM)
@@ -95,8 +95,7 @@ BD_ACRT   := $(DISC)/CERTIFICATE/app.discroot.crt
 BD_BCRT   := $(DISC)/CERTIFICATE/bu.discroot.crt
 BD_ALL    := $(BD_JO) $(BD_JAR) $(BD_FONT) $(BD_FNTIDX) $(BD_META) $(BD_BANNER) \
              $(BD_INDEX) $(BD_MVOBJ) $(BD_ID) $(BD_ACRT) $(BD_BCRT) $(BD_HEN) \
-             $(Patch_Payload) $(USBin_Payload) $(Payload) \
-             $(PAYLOAD_DST) $(APP_DST) $(VUE_DST)
+             $(Patch_Payload) $(USBin_Payload) $(Payload) $(PAYLOAD_DST)
 
 # Create directories
 $(DISC): $(sort $(dir $(BD_ALL)))
@@ -108,7 +107,7 @@ $(BD_JO): bd-metadata/bdjo.xml $(DISC) $(JAVA8)
 	$(JAVA8) -jar thirdparty/bd-tools/bdjo.jar $< $@
 
 # Signed JAR containing the HenLoader Xlet
-$(BD_JAR): build/henloader.jar $(DISC)
+$(BD_JAR): build/RefactorHenloader.jar $(DISC)
 	cp $< $@
 
 # There needs to be at least one font file on the disc, if I understand correctly
@@ -128,7 +127,7 @@ $(Payload): bd-metadata/payload.bin $(DISC)
 $(DISC)/payloads/%: bd-metadata/payloads/% | $(DISC)
 	mkdir -p $(dir $@)
 	cp $< $@
-
+	
 # Metadata about the disc, including user-visible name and banner
 $(BD_META): bd-metadata/bdmt_eng.xml $(DISC)
 	cp $< $@
@@ -155,9 +154,9 @@ $(BD_BCRT): thirdparty/bd-certificates/bu.discroot.crt $(DISC)
 
 # Generate the final ISO containing HenLoader
 
-DISC_LABEL := HenLoader
+DISC_LABEL := RefactorHenloader
 
-build/henloader.iso: $(MAKEFS) $(BD_ALL)
+build/RefactorHenloader.iso: $(MAKEFS) $(BD_ALL)
 	$(MAKEFS) -m 1536m -t udf -o T=bdre,v=2.50,L=$(DISC_LABEL) $@ $(DISC)
 
 # Cleaning just means deleting the build directory
