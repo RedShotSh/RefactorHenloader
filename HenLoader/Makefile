@@ -157,7 +157,7 @@ $(BD_BCRT): thirdparty/bd-certificates/bu.discroot.crt $(DISC)
 DISC_LABEL := RefactorHenloader
 
 build/RefactorHenloader.iso: $(MAKEFS) $(BD_ALL)
-	$(MAKEFS) -m 1536m -t udf -o T=bdre,v=2.50,L=$(DISC_LABEL) $@ $(DISC)
+	$(MAKEFS) -m 16m -t udf -o T=bdre,v=2.50,L=$(DISC_LABEL) $@ $(DISC)
 
 # Cleaning just means deleting the build directory
 
