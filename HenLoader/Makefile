@@ -78,16 +78,25 @@ BD_JO     := $(DISC)/BDMV/BDJO/00000.bdjo
 BD_JAR    := $(DISC)/BDMV/JAR/00000.jar
 BD_FONT   := $(DISC)/BDMV/AUXDATA/00000.otf
 BD_FNTIDX := $(DISC)/BDMV/AUXDATA/dvb.fontindex
-BD_HEN    := $(DISC)/BDMV/AUXDATA/aiofix_USBpayload.elf
+BD_HEN    := $(DISC)/BDMV/AUXDATA/USBpayload.elf
+Patch_Payload := $(DISC)/BDMV/AUXDATA/USBPatchPayload.elf
+USBin_Payload := $(DISC)/BDMV/AUXDATA/USBpayload.bin
+Payload := $(DISC)/BDMV/AUXDATA/payload.bin
+
+PAYLOAD_SRC := $(wildcard bd-metadata/payloads/*)
+PAYLOAD_DST := $(patsubst bd-metadata/payloads/%,$(DISC)/payloads/%,$(PAYLOAD_SRC))
+
 BD_META   := $(DISC)/BDMV/META/DL/bdmt_eng.xml
-BD_BANNER := $(DISC)/BDMV/META/DL/logo.jpg
+BD_BANNER := $(DISC)/BDMV/META/DL/goldenhen.png
 BD_INDEX  := $(DISC)/BDMV/index.bdmv
 BD_MVOBJ  := $(DISC)/BDMV/MovieObject.bdmv
 BD_ID     := $(DISC)/CERTIFICATE/id.bdmv
 BD_ACRT   := $(DISC)/CERTIFICATE/app.discroot.crt
 BD_BCRT   := $(DISC)/CERTIFICATE/bu.discroot.crt
 BD_ALL    := $(BD_JO) $(BD_JAR) $(BD_FONT) $(BD_FNTIDX) $(BD_META) $(BD_BANNER) \
-             $(BD_INDEX) $(BD_MVOBJ) $(BD_ID) $(BD_ACRT) $(BD_BCRT) $(BD_HEN)
+             $(BD_INDEX) $(BD_MVOBJ) $(BD_ID) $(BD_ACRT) $(BD_BCRT) $(BD_HEN) \
+             $(Patch_Payload) $(USBin_Payload) $(Payload) \
+             $(PAYLOAD_DST) $(APP_DST) $(VUE_DST)
 
 # Create directories
 $(DISC): $(sort $(dir $(BD_ALL)))
@@ -107,13 +116,23 @@ $(BD_FONT): bd-metadata/OpenSans-Regular.otf $(DISC)
 	cp $< $@
 $(BD_FNTIDX): bd-metadata/dvb.fontindex $(DISC)
 	cp $< $@
-$(BD_HEN): bd-metadata/aiofix_USBpayload.elf $(DISC)
+$(BD_HEN): bd-metadata/USBpayload.elf $(DISC)
+	cp $< $@
+$(Patch_Payload): bd-metadata/USBPatchPayload.elf $(DISC)
+	cp $< $@
+$(USBin_Payload): bd-metadata/USBpayload.bin $(DISC)
+	cp $< $@
+$(Payload): bd-metadata/payload.bin $(DISC)
+	cp $< $@
+
+$(DISC)/payloads/%: bd-metadata/payloads/% | $(DISC)
+	mkdir -p $(dir $@)
 	cp $< $@
 
 # Metadata about the disc, including user-visible name and banner
 $(BD_META): bd-metadata/bdmt_eng.xml $(DISC)
 	cp $< $@
-$(BD_BANNER): bd-metadata/logo.jpg $(DISC)
+$(BD_BANNER): bd-metadata/goldenhen.png $(DISC)
 	cp $< $@
 
 # Blu-ray index that points the player towards MovieObject
@@ -139,7 +158,7 @@ $(BD_BCRT): thirdparty/bd-certificates/bu.discroot.crt $(DISC)
 DISC_LABEL := HenLoader
 
 build/henloader.iso: $(MAKEFS) $(BD_ALL)
-	$(MAKEFS) -m 16m -t udf -o T=bdre,v=2.50,L=$(DISC_LABEL) $@ $(DISC)
+	$(MAKEFS) -m 1536m -t udf -o T=bdre,v=2.50,L=$(DISC_LABEL) $@ $(DISC)
 
 # Cleaning just means deleting the build directory
 
